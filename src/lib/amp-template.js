@@ -701,34 +701,25 @@ text-decoration: none;
           width="800"
           height="450"
           layout="responsive"
-  fetchpriority="high"
           alt="${post.post_title}">
         </amp-img>
       </div>
       <div class="social-section">
   <h4>Share this post</h4>
   <div class="share-buttons">
-    <a href="https://www.facebook.com/sharer/sharer.php?u=${
-      post?.post_name
-    }" target="_blank" rel="noopener" aria-label="Share on Facebook">
+    <a href="https://www.facebook.com/sharer/sharer.php?u=${post?.post_name}" target="_blank" rel="noopener" aria-label="Share on Facebook">
       <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook" />
     </a>
 
-    <a href="https://twitter.com/intent/tweet?url=${
-      post?.post_name
-    }&text=Check%20this%20out!" target="_blank" rel="noopener" aria-label="Share on Twitter">
+    <a href="https://twitter.com/intent/tweet?url=${post?.post_name}&text=Check%20this%20out!" target="_blank" rel="noopener" aria-label="Share on Twitter">
       <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" alt="Twitter/X" />
     </a>
 
-    <a href="https://www.linkedin.com/sharing/share-offsite/?url=${
-      post?.post_name
-    }" target="_blank" rel="noopener" aria-label="Share on LinkedIn">
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=${post?.post_name}" target="_blank" rel="noopener" aria-label="Share on LinkedIn">
       <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/linkedin.svg" alt="LinkedIn" />
     </a>
 
-    <a href="https://api.whatsapp.com/send?text=Check%20this%20out!%20${
-      post?.post_name
-    }" target="_blank" rel="noopener" aria-label="Share on WhatsApp">
+    <a href="https://api.whatsapp.com/send?text=Check%20this%20out!%20${post?.post_name}" target="_blank" rel="noopener" aria-label="Share on WhatsApp">
       <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" alt="WhatsApp" />
     </a>
   </div>
