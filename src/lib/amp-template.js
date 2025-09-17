@@ -624,6 +624,7 @@ text-decoration: none;
 
 
  <!-- General Meta -->
+    <link rel="preload" as="image" href="${post.thumbnail_url}">
     <meta name="robots" content="max-image-preview:large">
     <meta name="author" content="${post.author.display_name}">
     <meta name="copyright" content="Court Book">
@@ -1223,18 +1224,18 @@ text-decoration: none;
         post.meta_description
       }</p>
 
-      <div class="article-image">
-        <amp-img
-          src= "${post.thumbnail_url}"
-          width="800"
-          height="450"
-          layout="responsive"
-          decoding="async"
-  loading="eager"
-  fetchpriority="high"
-          alt="${post.post_title}">
-        </amp-img>
-      </div>
+<div class="article-image">
+  <amp-img
+    src="${post.thumbnail_url}"
+    width="1280"
+    height="720"
+    layout="responsive"
+    decoding="async"
+    loading="eager"
+    fetchpriority="high"
+    alt="${post.post_title}">
+  </amp-img>
+</div>
       <div class="social-section">
   <h4>Share this post</h4>
   <div class="share-buttons">
