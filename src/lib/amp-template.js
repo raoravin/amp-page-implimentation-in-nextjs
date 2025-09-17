@@ -701,8 +701,6 @@ text-decoration: none;
           width="800"
           height="450"
           layout="responsive"
-          decoding="async"
-  loading="eager"
   fetchpriority="high"
           alt="${post.post_title}">
         </amp-img>
