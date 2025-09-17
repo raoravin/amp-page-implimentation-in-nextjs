@@ -10,7 +10,7 @@ export async function GET(request, { params }) {
   return new NextResponse(ampHtml, {
     status: 200,
     headers: {
-      'Content-Type': 'text/html; charset=utf-8',
+      // 'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, s-maxage=86400',
     },
   });
