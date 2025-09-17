@@ -625,7 +625,17 @@ text-decoration: none;
 
 
  <!-- General Meta -->
-    <link rel="preload" as="image" href="${post.thumbnail_url}">
+    <link 
+  rel="preload" 
+  as="image" 
+  href="${post.imageSizes.medium_large}"
+  imagesrcset="${post.imageSizes.medium} 300w,
+               ${post.imageSizes.medium_large} 768w,
+               ${post.imageSizes.large} 1024w"
+  imagesizes="(max-width: 600px) 300px,
+              (max-width: 900px) 768px,
+              1024px"
+  fetchpriority="high">
     <meta name="robots" content="max-image-preview:large">
     <meta name="author" content="${post.author.display_name}">
     <meta name="copyright" content="Court Book">
@@ -1231,9 +1241,15 @@ text-decoration: none;
 
 <div class="article-image">
   <amp-img
-    src="${post.thumbnail_url}"
-    width="1280"
-    height="720"
+    src="${post.imageSizes.medium_large}"
+    srcset="${post.imageSizes.medium} 300w,
+            ${post.imageSizes.medium_large} 768w,
+            ${post.imageSizes.large} 1024w"
+    sizes="(max-width: 600px) 300px,
+           (max-width: 900px) 768px,
+           1024px"
+    width="1024"
+    height="576"
     layout="responsive"
     decoding="async"
     loading="eager"
@@ -1241,6 +1257,7 @@ text-decoration: none;
     alt="${post.post_title}">
   </amp-img>
 </div>
+
       <div class="social-section">
   <h2>Share this post</h2>
   <div class="share-buttons">
