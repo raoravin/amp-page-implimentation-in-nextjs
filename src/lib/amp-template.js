@@ -310,25 +310,39 @@ export function generateAMPHTML() {
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>");
 
+
+    function cleanArticleBody(content) {
+  return content
+    // remove WP block comments
+    .replace(/<!--[\s\S]*?-->/g, "")
+    // strip HTML tags
+    .replace(/<\/?[^>]+(>|$)/g, "")
+    // decode HTML entities (&nbsp; → space, etc.)
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    // trim extra spaces/line breaks
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
   return `<!doctype html>
 <html ⚡ lang="en">
 <head>
   <meta charset="utf-8">
-  <script async src="https://cdn.ampproject.org/v0.js"></script>
-  <script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
-  <title>${post.post_title}</title>
-  <link rel="canonical" href="/blog/${post.post_name}">
-  <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-  <meta name="description" content="${post.meta_description}">
-  <meta name="author" content="${post.author.display_name}">
-  <meta property="og:title" content="${post.post_title}">
-  <meta property="og:description" content="${post.meta_description}">
-  <meta property="og:type" content="article">
-  <meta property="article:published_time" content="${post.post_date}">
-  <meta property="article:author" content="${post.author.display_name}">
-  ${post.tags
-    .map((tag) => `<meta property="article:tag" content="${tag}">`)
-    .join("\n  ")}
+    <title>${post.post_title}</title>
+
+    <!-- AMP Core -->
+    <link rel="preconnect" href="https://cdn.ampproject.org">
+    <script async src="https://cdn.ampproject.org/v0.js"></script>
+    <link rel="canonical" href="https://courtbook.in/posts/${post.post_name}">
+    <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+    <meta name="description" content="${post.meta_description}">
+
+
+
+    
   
   <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
   
@@ -605,6 +619,520 @@ text-decoration: none;
 }
 
   </style>
+
+
+
+
+ <!-- General Meta -->
+    <meta name="robots" content="max-image-preview:large">
+    <meta name="author" content="${post.author.display_name}">
+    <meta name="copyright" content="Court Book">
+    <meta name="application-name" content="Court Book">
+    <meta name="apple-mobile-web-app-title" content="${post.post_title}">
+
+    <!-- Article Meta -->
+    <meta property="article:published_time" content="${post.post_date}">
+    <meta property="article:modified_time" content="${post.post_modified}">
+    <meta property="article:section" content="Legal News">
+    ${post.tags
+      .map((tag) => `<meta property="article:tag" content="${tag}">`)
+      .join("\n    ")}
+    <meta property="article:author" content="${post.author.display_name}">
+
+    <!-- Open Graph -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:site_name" content="Court Book">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="${post.post_title}">
+    <meta property="og:description" content="${post.meta_description}">
+    <meta property="og:url" content="https://courtbook.in/posts/${post.post_name}">
+    <meta property="og:image" content="${post.thumbnail_url}">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="720">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${post.post_title}">
+    <meta name="twitter:description" content="${post.meta_description}">
+    <meta name="twitter:image" content="${post.thumbnail_url}">
+    <meta name="twitter:url" content="https://courtbook.in/posts/${post.post_name}">
+
+
+
+
+
+
+    <script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
+<!-- Analytics (essential for tracking) -->
+<script async type="module" custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.mjs" crossorigin="anonymous"></script>
+<script async nomodule custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js" crossorigin="anonymous"></script>
+
+  
+<!-- Ads (for monetization) -->
+<script async type="module" custom-element="amp-ad" src="https://cdn.ampproject.org/v0/amp-ad-0.1.mjs" crossorigin="anonymous"></script>
+<script async nomodule custom-element="amp-ad" src="https://cdn.ampproject.org/v0/amp-ad-0.1.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- Structured Data -->
+  <!-- Primary NewsArticle Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "author": {
+      "@type": "Person",
+      "name": "${post.author.display_name}",
+      "url": "https://courtbook.in/posts/author/${post.author.display_name}",
+      "jobTitle": "Legal Correspondent",
+    },
+    "datePublished": "${post.post_date}",
+    "dateModified": "${post.post_modified}",
+    "keywords": "${post.meta_keyword}",
+    "news_keywords": "${post.meta_keyword}",
+    "about": [
+      { "@type": "Thing", "name": "Supreme Court" },
+      { "@type": "Thing", "name": "Legal Judgment" },
+      { "@type": "Thing", "name": "Constitutional Law" },
+      { "@type": "Thing", "name": "Court Orders" },
+      { "@type": "Thing", "name": "Judicial Review" },
+      { "@type": "Thing", "name": "Legal Precedent" }
+    ],
+    "genre": "Legal News",
+    "interactivityType": "mixed",
+    "alternativeHeadline": "Supreme Court Delivers Landmark Judgment on Constitutional Rights",
+    "inLanguage": "en",
+    "headline": "${post.post_title}",
+    "image": {
+      "@context": "https://schema.org",
+      "@type": "ImageObject",
+      "contentUrl": "${post.thumbnail_url}",
+      "height": 720,
+      "width": 1280,
+      "url": "${post.thumbnail_url}",
+      "caption": "${post.post_title}"
+    },
+    "articleSection": "${post.categories[1]}",
+    "articleBody": "${cleanArticleBody(post.post_content)}",
+    "description": "${post.meta_description}",
+    "url": "https://courtbook.in/posts/${post.post_name}",
+    "isAccessibleForFree": true,
+    "hasPart": [
+      {
+        "@type": "WebPageElement",
+        "isAccessibleForFree": true,
+        "cssSelector": ".article-content"
+      }
+    ],
+    "publisher": {
+      "@type": "Organization",
+      "name": "Court Book",
+      "url": "https://courtbook.in",
+      "logo": {
+        "@context": "https://schema.org",
+        "@type": "ImageObject",
+        "contentUrl": "https://s3.courtbook.in/icons/large.png",
+        "height": 60,
+        "width": 240,
+        "name": "Court Book - Logo",
+        "url": "https://s3.courtbook.in/icons/large.png"
+      },
+      "description": "Comprehensive coverage of legal news, court judgments, and legal analysis",
+    },
+
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://courtbook.in/posts/${post.post_name}"
+    },
+    "speakable": {
+      "@context": "https://schema.org",
+      "@type": "SpeakableSpecification",
+      "xpath": [
+        "/html/head/title",
+        "//h1",
+        "/html/head/meta[@name='description']/@content"
+      ]
+    }
+  }
+  </script>
+
+
+
+
+  <!-- Organization Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Court Book",
+    "alternateName": "Court Book",
+    "url": "https://courtbook.in",
+    "logo": {
+      "@context": "https://schema.org",
+      "@type": "ImageObject",
+      "contentUrl": "https://s3.courtbook.in/icons/large.png",
+      "height": 60,
+      "width": 240,
+      "name": "Court Book - Logo",
+      "url": "https://s3.courtbook.in/icons/large.png"
+    },
+    "description": "${post.meta_description}",
+      {
+        "@type": "ContactPoint",
+        "email": "courtbook.in@gmail.com",
+        "contactType": "Customer Service"
+      }
+    ],
+    "areaServed": {
+      "@type": "Country",
+      "name": "India"
+    },
+    "knowsAbout": [
+      "Supreme Court Judgments",
+      "High Court Orders",
+      "Constitutional Law",
+      "Legal Analysis",
+      "Court Proceedings",
+      "Legal News",
+      "Judicial Decisions"
+    ]
+  }
+  </script>
+
+
+
+
+
+  <!-- WebSite Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Court Book",
+    "alternateName": "Court Book - Legal News Portal",
+    "url": "https://courtbook.in",
+    "description": "${post.meta_description}",
+    "inLanguage": "en",
+    "keywords": "${post.meta_keyword}",
+    "author": {
+      "@type": "Organization",
+      "name": "Court Book"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Court Book",
+      "logo": {
+      "@context": "https://schema.org",
+      "@type": "ImageObject",
+      "contentUrl": "https://s3.courtbook.in/icons/large.png",
+      "height": 60,
+      "width": 240,
+      "name": "Court Book - Logo",
+      "url": "https://s3.courtbook.in/icons/large.png"
+    },
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://courtbook.in/posts/search?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": "Legal News Categories",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Supreme Court",
+          "url": "https://courtbook.in/posts/category/supreme-court"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "High Court",
+          "url": "https://courtbook.in/posts/category/high-courts"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Judgment",
+          "url": "https://courtbook.in/posts/category/judgments"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Latest News Hindi",
+          "url": "https://courtbook.in/posts/category/latest-news-hindi"
+        },
+                {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Latest News",
+          "url": "https://courtbook.in/posts/category/latest"
+        }
+      ]
+    }
+  }
+  </script>
+
+
+
+<!-- Breadcrumb Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "name": "Legal News Navigation",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@id": "https://courtbook.in",
+          "name": "Home"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "item": {
+          "@id": "https://courtbook.in/amp/",
+          "@type": "WebPage",
+          "name": "AMP"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "item": {
+          "@id": "https://courtbook.in/amp/posts",
+          "@type": "WebPage",
+          "name": "Posts"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "item": {
+          "@id": "https://courtbook.in/amp/posts/${post.post_name}",
+          "@type": "WebPage",
+          "name": "${post.post_title}"
+        }
+      }
+    ]
+  }
+  </script>
+
+
+
+  <!-- Site Navigation Schema -->
+  <script type="application/ld+json">
+  {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Legal Case Updates & Court News",
+  "description": "Comprehensive legal news, court judgments, and case updates from Supreme Court and High Courts across India",
+  "url": "https://example.com",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://example.com/search?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  },
+  "mainEntity": [
+    {
+      "@type": "SiteNavigationElement",
+      "@id": "#english-navigation",
+      "name": "English Navigation",
+      "hasPart": [
+        {
+          "@type": "SiteNavigationElement",
+          "name": "Latest News",
+          "url": "/posts/category/latest"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "Supreme Court",
+          "url": "/posts/category/supreme-court"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "High Courts",
+          "url": "/posts/category/high-courts",
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "Judgments",
+          "url": "/posts/category/judgments"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "Consumer Cases",
+          "url": "/posts/category/consumer"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "AIBE & Recruitments",
+          "url": "/posts/category/aibe-and-recruitment"
+        }
+      ]
+    },
+    {
+      "@type": "SiteNavigationElement",
+      "@id": "#hindi-navigation",
+      "name": "Hindi Navigation",
+      "inLanguage": "hi",
+      "hasPart": [
+        {
+          "@type": "SiteNavigationElement",
+          "name": "ताज़ा ख़बरें",
+          "url": "/posts/category/latest-news-hindi",
+          "inLanguage": "hi"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "सर्वोच्च न्यायालय",
+          "url": "/posts/category/supreme-court-hindi",
+          "inLanguage": "hi"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "उच्च न्यायालय",
+          "url": "/posts/category/high-courts-hindi",
+          "inLanguage": "hi",
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "जजमेंट",
+          "url": "/posts/category/judgments-hindi",
+          "inLanguage": "hi"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "उपभोक्ता मामले",
+          "url": "/posts/category/consumer-cases-hindi",
+          "inLanguage": "hi"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "एआईबीई एवं नियुक्ति",
+          "url": "/posts/category/aibe-and-recruitment-hindi",
+          "inLanguage": "hi"
+        }
+      ]
+    },
+    {
+      "@type": "SiteNavigationElement",
+      "@id": "#main-menu",
+      "name": "Main Menu",
+      "hasPart": [
+        {
+          "@type": "SiteNavigationElement",
+          "name": "Home",
+          "url": "/"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "Bare Act",
+          "url": "/search/?category=popular"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "Constitution",
+          "url": "/consitution"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": "Drafts",
+          "url": "/draft"
+
+        },
+      ]
+    }
+  ],
+  "publisher": {
+    "@type": "Organization",
+    "name": "Court Book",
+    "logo": {
+      "@context": "https://schema.org",
+      "@type": "ImageObject",
+      "contentUrl": "https://s3.courtbook.in/icons/large.png",
+      "height": 60,
+      "width": 240,
+      "name": "Court Book - Logo",
+      "url": "https://s3.courtbook.in/icons/large.png"
+    },
+  },
+  "inLanguage": ["en", "hi"]
+}
+  </script>
+
+
+
+
+
+  <!-- WebPage Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "${post.post_title}",
+    "description": "${post.meta_description}",
+    "keywords": "${post.meta_keyword}",
+    "inLanguage": "en",
+    "url": "https://courtbook.in/posts/${post.post_name}",
+    "author": {
+      "@type": "Person",
+      "name": "${post.author.display_name}"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Court Book",
+      "url": "https://courtbook.in",
+      "logo": {
+        "@context": "https://schema.org",
+        "@type": "ImageObject",
+        "contentUrl": "https://s3.courtbook.in/icons/large.png",
+        "height": 60,
+        "width": 240,
+        "name": "Court Book - Logo",
+        "url": "https://s3.courtbook.in/icons/large.png"
+      },
+    },
+    "datePublished": "${post.post_date}",
+    "dateModified": "${post.post_modified}",
+    "mainEntity": {
+      "@type": "NewsArticle",
+      "headline": "${post.post_title}"
+    },
+    "speakable": {
+      "@context": "https://schema.org",
+      "@type": "SpeakableSpecification",
+      "xpath": [
+        "//h1/span",
+        "/html/head/meta[@name='description']/@content"
+      ]
+    },
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Court Book",
+      "url": "https://courtbook.in"
+    }
+  }
+  </script>
+
+
+
+
+
+
+
 </head>
 <body>
   <!-- Header -->
