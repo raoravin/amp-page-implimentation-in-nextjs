@@ -310,22 +310,23 @@ export function generateAMPHTML() {
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>");
 
-
-    function cleanArticleBody(content) {
-  return content
-    // remove WP block comments
-    .replace(/<!--[\s\S]*?-->/g, "")
-    // strip HTML tags
-    .replace(/<\/?[^>]+(>|$)/g, "")
-    // decode HTML entities (&nbsp; → space, etc.)
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    // trim extra spaces/line breaks
-    .replace(/\s+/g, " ")
-    .trim();
-}
+  function cleanArticleBody(content) {
+    return (
+      content
+        // remove WP block comments
+        .replace(/<!--[\s\S]*?-->/g, "")
+        // strip HTML tags
+        .replace(/<\/?[^>]+(>|$)/g, "")
+        // decode HTML entities (&nbsp; → space, etc.)
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        // trim extra spaces/line breaks
+        .replace(/\s+/g, " ")
+        .trim()
+    );
+  }
 
   return `<!doctype html>
 <html ⚡ lang="en">
@@ -512,7 +513,7 @@ text-decoration: none;
     .content a { color: #DC2626; text-decoration: none; font-weight: 600 }
    .content  a:hover { text-decoration: underline; }
     .tags { margin-top: 30px; padding-top: 20px; border-top: 1px solid #E5E7EB; }
-    .tag { display: inline-block; background: #F3F4F6; padding: 6px 12px; border-radius: 16px; margin: 4px 8px 4px 0; font-size: 13px; color: #6B7280; }
+    .tag { display: inline-block; border: 1px solid #E5E7EB; padding: 6px 12px; border-radius: 16px; margin: 4px 8px 4px 0; font-size: 13px; color: #6B7280; }
     .back-link { display: inline-block; margin-top: 30px; color: #DC2626; text-decoration: none; font-weight: 500; }
     footer { margin-top: 50px; padding: 10px 20px; background: #F9FAFB; border-top: 1px solid #E5E7EB; text-align: center; color: #6B7280; font-size: 14px; }
 
@@ -646,7 +647,9 @@ text-decoration: none;
     <meta property="og:type" content="article">
     <meta property="og:title" content="${post.post_title}">
     <meta property="og:description" content="${post.meta_description}">
-    <meta property="og:url" content="https://courtbook.in/posts/${post.post_name}">
+    <meta property="og:url" content="https://courtbook.in/posts/${
+      post.post_name
+    }">
     <meta property="og:image" content="${post.thumbnail_url}">
     <meta property="og:image:width" content="1280">
     <meta property="og:image:height" content="720">
@@ -656,7 +659,9 @@ text-decoration: none;
     <meta name="twitter:title" content="${post.post_title}">
     <meta name="twitter:description" content="${post.meta_description}">
     <meta name="twitter:image" content="${post.thumbnail_url}">
-    <meta name="twitter:url" content="https://courtbook.in/posts/${post.post_name}">
+    <meta name="twitter:url" content="https://courtbook.in/posts/${
+      post.post_name
+    }">
 
 
 
@@ -1140,7 +1145,7 @@ text-decoration: none;
   <header class="header">
     <button class="hamburger" on="tap:sidebar.toggle">☰</button>
     <a href="/" class="logo">
-      <img src="/center_icon.png" alt="CourtBook Logo" />
+      <img src="/center_icon.png" width="256" height="69" alt="CourtBook Logo" />
     </a>
   </header>
 
@@ -1237,7 +1242,7 @@ text-decoration: none;
   </amp-img>
 </div>
       <div class="social-section">
-  <h4>Share this post</h4>
+  <h2>Share this post</h2>
   <div class="share-buttons">
     <a href="https://www.facebook.com/sharer/sharer.php?u=${
       post?.post_name
