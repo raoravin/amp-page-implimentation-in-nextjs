@@ -773,8 +773,8 @@ export function generateAMPHTML(baseUrl = "https://localhost:3000") {
 
 .similar-post-image { 
   flex-shrink: 0; 
-  width: 100px; 
-  height: 80px; 
+  width: 150px; 
+  height: 150px; 
   overflow: hidden; 
   border-radius: 4px; 
 }
@@ -1085,10 +1085,9 @@ export function generateAMPHTML(baseUrl = "https://localhost:3000") {
           <a href="/posts/${similarPost?.post_name}" class="similar-post-link">
             <div class="similar-post-image">
               <amp-img
-                src="${
+                src="${ similarPost?.imageSizes?.thumbnail ||
                   similarPost?.imageSizes?.medium ||
-                  similarPost?.imageSizes?.medium_large ||
-                  "/default.jpg"
+                  similarPost?.imageSizes?.medium_large
                 }"
                 width="300"
                 height="169"
