@@ -1,4 +1,4 @@
-export function generateAMPHTML() {
+export function generateAMPHTML(baseUrl = "https://localhost:3000") {
   const post = {
     ID: 23949,
     post_author: 4,
@@ -302,8 +302,7 @@ export function generateAMPHTML() {
     },
   };
 
-
-  const src = post.imageSizes.medium_large ? post.imageSizes.medium_large : post.thumbnail_url
+  const src = post.imageSizes?.medium_large || post.thumbnail_url;
 
   // Convert markdown-style content to HTML (simplified version)
   const htmlContent = post.post_content
@@ -314,214 +313,422 @@ export function generateAMPHTML() {
     .replace(/\*(.*?)\*/g, "<em>$1</em>");
 
   function cleanArticleBody(content) {
-    return (
-      content
-        // remove WP block comments
-        .replace(/<!--[\s\S]*?-->/g, "")
-        // strip HTML tags
-        .replace(/<\/?[^>]+(>|$)/g, "")
-        // decode HTML entities (&nbsp; → space, etc.)
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        // trim extra spaces/line breaks
-        .replace(/\s+/g, " ")
-        .trim()
-    );
+    return content
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .replace(/<\/?[^>]+(>|$)/g, "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/\s+/g, " ")
+      .trim()
+      .substring(0, 5000); // Limit length for structured data
   }
+
+  // Get optimized image source
+  const getImageSrc = (post) => {
+    return post.imageSizes?.medium_large || post.thumbnail_url;
+  };
+
+  // Format date for AMP
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toISOString();
+  };
+
+  // Generate canonical URL
+  const canonicalUrl = `${baseUrl}/posts/${post.post_name}`;
+  const ampUrl = `${baseUrl}/amp/posts/${post.post_name}`;
 
   return `<!doctype html>
 <html ⚡ lang="en">
 <head>
   <meta charset="utf-8">
-    <title>${post.post_title}</title>
+  <title>${post.post_title}</title>
 
-    <!-- AMP Core -->
-    <link rel="preconnect" href="https://cdn.ampproject.org">
-    <script async src="https://cdn.ampproject.org/v0.js"></script>
-    <link rel="canonical" href="https://courtbook.in/posts/${post.post_name}">
-    <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-    <meta name="description" content="${post.meta_description}">
+  <!-- Required AMP Scripts -->
+  <script async src="https://cdn.ampproject.org/v0.js"></script>
+  <script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
+  <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
 
-
-
-    
+  <!-- AMP Meta Requirements -->
+  <link rel="canonical" href="${canonicalUrl}">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
   
+  <!-- SEO Meta -->
+  <meta name="description" content="${post.meta_description}">
+  <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+  <meta name="author" content="${post.author.display_name}">
+
+  <!-- Open Graph -->
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="${post.post_title}">
+  <meta property="og:description" content="${post.meta_description}">
+  <meta property="og:url" content="${canonicalUrl}">
+  <meta property="og:site_name" content="Court Book">
+  <meta property="og:image" content="${post.thumbnail_url}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${post.post_title}">
+  <meta name="twitter:description" content="${post.meta_description}">
+  <meta name="twitter:image" content="${post.thumbnail_url}">
+
+  <!-- Article Meta -->
+  <meta property="article:published_time" content="${formatDate(
+    post.post_date
+  )}">
+  <meta property="article:modified_time" content="${formatDate(
+    post.post_modified
+  )}">
+  <meta property="article:author" content="${post.author.display_name}">
+  <meta property="article:section" content="Legal News">
+  ${post.tags
+    .map((tag) => `<meta property="article:tag" content="${tag}">`)
+    .join("\n  ")}
+
+  <!-- Preload Critical Resources -->
+  <link rel="preload" as="image" href="${getImageSrc(
+    post
+  )}" fetchpriority="high">
+
+  <!-- AMP Boilerplate -->
   <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
-  
+
+  <!-- Custom Styles -->
   <style amp-custom>
-    body { font-family: system-ui, sans-serif; color: #333; margin: 0; background: #fff; }
-    
-.header {
-  background: #fff;
-  border-bottom: 1px solid #E5E7EB;
-  padding: 12px 20px;
-  display: flex;             /* enable flex */
-  justify-content: space-between; /* distribute items */
-  align-items: center;       /* vertically center */
-}
+    /* Reset and Base Styles */
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #1f2937;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      line-height: 1.6;
+    }
 
-.header .logo:nth-child(2) {
-  margin-left: auto;
-  margin-right: auto; /* centers 2nd card */
-}
+    /* Header */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      top: 0;
+      z-index: 10;
+    }
 
+    .hamburger {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      color: #374151;
+    }
 
-  .logo img {
-    width: 130px;
-    height: 40px;
-    margin-right: 60px;
-  }
+    .logo {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      font-weight: 700;
+      color: #dc2626;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
 
+    .logo amp-img {
+      margin-right: 8px;
+    }
 
+    /* Breadcrumbs */
+    .breadcrumbs {
+      background: #f9fafb;
+      padding: 8px 20px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 14px;
+    }
 
-    .hamburger, .close-sidebar { background: none; border: none; font-size: 24px; cursor: pointer; padding: 8px; }
-    .hamburger { color: #333; }
-    .logo, .sidebar-logo { font-size: 24px; font-weight: 700; color: #DC2626; text-decoration: none; display: flex; align-items: center; }
-    .sidebar-logo { font-size: 20px; color: white; }
-    .logo svg { margin-right: 8px; }
+    .breadcrumb-item {
+      display: inline;
+      color: #6b7280;
+    }
 
-    .breadcrumbs { background: #F9FAFB; padding: 8px 20px; border-bottom: 1px solid #E5E7EB; font-size: 13px; }
-    .breadcrumb-item { display: inline; color: #6B7280; }
-    .breadcrumb-item a { color: #DC2626; text-decoration: none; }
-    .breadcrumb-item:not(:last-child)::after { content: " › "; margin: 0 8px; color: #9CA3AF; }
+    .breadcrumb-item a {
+      color: #dc2626;
+      text-decoration: none;
+    }
 
-    .sidebar { background: #fff; padding: 0; width: 280px; }
-    .sidebar-header { padding: 10px 20px; display: flex; align-items: center; justify-content: end; }
-    .sidebar-content { padding: 10px 20px; }
-.sidebar-section {
-    background: #fff;
-    font-family: Arial, sans-serif;
-  }
+    .breadcrumb-item:not(:last-child)::after {
+      content: " › ";
+      margin: 0 8px;
+      color: #9ca3af;
+    }
 
-  .sidebar-section h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    color: #111827;
-    border-bottom: 1px solid #e5e7eb;
-    padding-bottom: 6px;
-  }
+    /* Sidebar */
+    .sidebar {
+      background: #fff;
+      width: 280px;
+      height: 100vh;
+      overflow-y: auto;
+    }
 
-  .sidebar-nav {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+    .sidebar-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-  .sidebar-nav li {
-    margin: 8px 0;
-  }
+    .close-sidebar {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #374151;
+    }
 
-  .sidebar-nav li a {
-    text-decoration: none;
-    color: #374151;
-    font-size: 14px;
-    display: block;
-    padding: 6px 10px;
-    border-radius: 4px;
-    transition: background 0.2s;
-  }
+    .sidebar-content {
+      padding: 20px;
+    }
 
-  .sidebar-nav li a:hover {
-    background: #f3f4f6;
-    color: #111827;
-  }
-.sidebar-section li {
-  list-style: none;
-  padding: 0;
-  margin-top: 6px
+    .sidebar-section {
+      margin-bottom: 24px;
+    }
 
-}
+    .sidebar-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 12px;
+      color: #111827;
+      border-bottom: 2px solid #dc2626;
+      padding-bottom: 6px;
+    }
 
-.sidebar-nav {
-margin: 0;
-padding : 4px 0
-}
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-.sidebar-nav li a {
-text-decoration: none;
-}
+    .sidebar-nav li {
+      margin: 4px 0;
+    }
 
-.social-section {
-    margin-top: 20px;
-    font-family: Arial, sans-serif;
-  }
+    .sidebar-nav a {
+      display: block;
+      padding: 8px 12px;
+      color: #374151;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
 
-  .social-section h4 {
-    font-size: 15px;
-    font-weight: 600;
-    margin: 12px 0 8px;
-    color: #111827;
-  }
+    .sidebar-nav a:hover {
+      background-color: #f3f4f6;
+      color: #dc2626;
+    }
 
-  .share-buttons {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
+    /* Main Content */
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
 
-  .share-buttons a img {
-    width: 24px;
-    height: 24px;
-    display: block;
-    filter: invert(20%) sepia(10%) saturate(100%) hue-rotate(200deg) brightness(90%);
-    transition: transform 0.2s ease;
-  }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #111827;
+      margin: 0 0 16px;
+    }
 
-  .share-buttons a:hover img {
-    transform: scale(1.1);
-  }
+    .meta {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
 
-  .whatsapp-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+    .article-description {
+      font-size: 16px;
+      color: #6b7280;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
 
-  .whatsapp-links li {
-    margin: 6px 0;
-  }
+    .article-image {
+      margin: 24px 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
 
-  .whatsapp-links a {
-    text-decoration: none;
-    font-size: 14px;
-    color: #065f46; /* WhatsApp green-dark */
-    font-weight: 500;
-  }
+    /* Article Content */
+    article {
+      font-size: 16px;
+      line-height: 1.7;
+    }
 
-  .whatsapp-links a:hover {
-    text-decoration: underline;
-  }
+    article h2, article h3, article h4 {
+      color: #111827;
+      font-weight: 600;
+      margin: 32px 0 16px;
+      line-height: 1.3;
+    }
 
+    article h2 { font-size: 1.5rem; }
+    article h3 { font-size: 1.25rem; }
+    article h4 { font-size: 1.125rem; }
 
+    article p {
+      margin-bottom: 16px;
+      color: #374151;
+    }
 
-    .content { margin: 20px; }
-    h1 { font-size: 1.5em; margin-bottom: 15px; line-height: 1.3; font-weight: 700; color: #111827; }
-    .meta { color: #6B7280; font-size: 14px; margin-bottom: 20px; padding: 15px 0; border-bottom: 1px solid #E5E7EB; }
-    .article-image { margin: 20px 0; }
-    
-    article { line-height: 1.6; font-size: 16px; }
-    article h2, article h3, article h4 { color: #111827; margin-top: 30px; margin-bottom: 15px; }
-    article h2 { font-size: 1.5em; }
-    article h3 { font-size: 1.3em; }
-    article h4 { font-size: 1.1em; }
-    article p { margin-bottom: 16px; color: #374151; }
-    article strong { font-weight: 600; color: #111827; }
-    article ul, article ol { margin-bottom: 16px; padding-left: 24px; }
-    article li { margin-bottom: 8px; color: #374151; }
-    article blockquote { border-left: 2px solid #DC2626; padding: 20px; margin: 20px 0; font-style: italic; background: #F9FAFB; border-radius: 4px; }
-    
-    .content a { color: #DC2626; text-decoration: none; font-weight: 600 }
-   .content  a:hover { text-decoration: underline; }
-    .tags { margin-top: 30px; padding-top: 20px; border-top: 1px solid #E5E7EB; }
-    .tag { display: inline-block; border: 1px solid #E5E7EB; padding: 6px 12px; border-radius: 16px; margin: 4px 8px 4px 0; font-size: 13px; color: #6B7280; }
-    .back-link { display: inline-block; margin-top: 30px; color: #DC2626; text-decoration: none; font-weight: 500; }
-    footer { margin-top: 50px; padding: 10px 20px; background: #F9FAFB; border-top: 1px solid #E5E7EB; text-align: center; color: #6B7280; font-size: 14px; }
+    article a {
+      color: #dc2626;
+      text-decoration: underline;
+      font-weight: 500;
+    }
 
+    article a:hover {
+      text-decoration: none;
+    }
 
+    article ul, article ol {
+      margin: 16px 0;
+      padding-left: 24px;
+    }
 
+    article li {
+      margin-bottom: 8px;
+      color: #374151;
+    }
+
+    article blockquote {
+      border-left: 4px solid #dc2626;
+      margin: 24px 0;
+      padding: 16px 20px;
+      background: #f9fafb;
+      border-radius: 0 4px 4px 0;
+      font-style: italic;
+    }
+
+    article strong {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    /* Share Buttons */
+    .share-section {
+      margin: 32px 0;
+      padding: 20px;
+      background: #f9fafb;
+      border-radius: 8px;
+    }
+
+    .share-section h2 {
+      font-size: 18px;
+      margin: 0 0 12px;
+      color: #111827;
+    }
+
+    .share-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: transform 0.2s;
+    }
+
+    .share-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .facebook { background: #1877f2; color: white; }
+    .twitter { background: #1da1f2; color: white; }
+    .linkedin { background: #0077b5; color: white; }
+    .whatsapp { background: #25d366; color: white; }
+
+    /* Tags */
+    .tags {
+      margin: 32px 0;
+      padding: 20px 0;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #f3f4f6;
+      color: #374151;
+      padding: 6px 12px;
+      border-radius: 16px;
+      margin: 4px 8px 4px 0;
+      font-size: 13px;
+      text-decoration: none;
+      border: 1px solid #e5e7eb;
+    }
+
+    .tag:hover {
+      background: #e5e7eb;
+    }
+
+    /* WhatsApp Section */
+    .whatsapp-section {
+      margin: 32px 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      border-radius: 8px;
+      color: white;
+    }
+
+    .whatsapp-section h4 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .whatsapp-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .whatsapp-links li {
+      margin: 8px 0;
+    }
+
+    .whatsapp-links a {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+
+    .whatsapp-links a::before {
+      content: "📱";
+      margin-right: 8px;
+    }
+
+    /* Similar Posts */
     .similar-posts-grid {
     margin-top: 30px;
     }
@@ -566,8 +773,8 @@ text-decoration: none;
 
 .similar-post-image { 
   flex-shrink: 0; 
-  width: 240px; 
-  height: 160px; 
+  width: 100px; 
+  height: 80px; 
   overflow: hidden; 
   border-radius: 4px; 
 }
@@ -596,565 +803,128 @@ text-decoration: none;
   color: #DC2626; 
 }
 
-/* Responsive Design */
-@media (max-width: 768px) { 
-  .main-container { 
-    flex-direction: column; 
-    margin: 15px; 
-    gap: 20px; 
-  }
-  
-  .content-sidebar { 
-    order: -1; 
-  }
-  
-  .similar-post-image { 
-    width: 100px; 
-    height: 100px; 
-  }
+    /* Footer */
+    footer {
+      margin-top: 48px;
+      padding: 24px 20px;
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+    }
 
-    .logo img {
-    width: 130px;
-    height: 40px;
-    margin-right: 40px;
-  }
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 16px;
+      }
 
-    
-}
+      h1 {
+        font-size: 1.5rem;
+      }
 
+      .share-buttons {
+        justify-content: center;
+      }
+
+      .similar-post-image {
+        width: 80px;
+        height: 60px;
+      }
+
+      .similar-post-title {
+        font-size: 13px;
+      }
+    }
   </style>
 
-
-
-
- <!-- General Meta -->
-    <link 
-  rel="preload" 
-  as="image" 
-  href="${src}"
-  fetchpriority="high">
-    <meta name="robots" content="max-image-preview:large">
-    <meta name="author" content="${post.author.display_name}">
-    <meta name="copyright" content="Court Book">
-    <meta name="application-name" content="Court Book">
-    <meta name="apple-mobile-web-app-title" content="${post.post_title}">
-
-    <!-- Article Meta -->
-    <meta property="article:published_time" content="${post.post_date}">
-    <meta property="article:modified_time" content="${post.post_modified}">
-    <meta property="article:section" content="Legal News">
-    ${post.tags
-      .map((tag) => `<meta property="article:tag" content="${tag}">`)
-      .join("\n    ")}
-    <meta property="article:author" content="${post.author.display_name}">
-
-    <!-- Open Graph -->
-    <meta property="og:locale" content="en_US">
-    <meta property="og:site_name" content="Court Book">
-    <meta property="og:type" content="article">
-    <meta property="og:title" content="${post.post_title}">
-    <meta property="og:description" content="${post.meta_description}">
-    <meta property="og:url" content="https://courtbook.in/posts/${
-      post.post_name
-    }">
-    <meta property="og:image" content="${post.thumbnail_url}">
-    <meta property="og:image:width" content="1280">
-    <meta property="og:image:height" content="720">
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="${post.post_title}">
-    <meta name="twitter:description" content="${post.meta_description}">
-    <meta name="twitter:image" content="${post.thumbnail_url}">
-    <meta name="twitter:url" content="https://courtbook.in/posts/${
-      post.post_name
-    }">
-
-
-
-
-
-
-    <script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
-<!-- Analytics (essential for tracking) -->
-<script async type="module" custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.mjs" crossorigin="anonymous"></script>
-<script async nomodule custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js" crossorigin="anonymous"></script>
-
-  
-<!-- Ads (for monetization) -->
-<script async type="module" custom-element="amp-ad" src="https://cdn.ampproject.org/v0/amp-ad-0.1.mjs" crossorigin="anonymous"></script>
-<script async nomodule custom-element="amp-ad" src="https://cdn.ampproject.org/v0/amp-ad-0.1.js" crossorigin="anonymous"></script>
-
-
-
-
-<!-- Structured Data -->
-  <!-- Primary NewsArticle Schema -->
+  <!-- Consolidated Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "NewsArticle",
-    "author": {
-      "@type": "Person",
-      "name": "${post.author.display_name}",
-      "url": "https://courtbook.in/posts/author/${post.author.display_name}",
-      "jobTitle": "Legal Correspondent",
-    },
-    "datePublished": "${post.post_date}",
-    "dateModified": "${post.post_modified}",
-    "keywords": "${post.meta_keyword}",
-    "news_keywords": "${post.meta_keyword}",
-    "about": [
-      { "@type": "Thing", "name": "Supreme Court" },
-      { "@type": "Thing", "name": "Legal Judgment" },
-      { "@type": "Thing", "name": "Constitutional Law" },
-      { "@type": "Thing", "name": "Court Orders" },
-      { "@type": "Thing", "name": "Judicial Review" },
-      { "@type": "Thing", "name": "Legal Precedent" }
-    ],
-    "genre": "Legal News",
-    "interactivityType": "mixed",
-    "alternativeHeadline": "Supreme Court Delivers Landmark Judgment on Constitutional Rights",
-    "inLanguage": "en",
-    "headline": "${post.post_title}",
-    "image": {
-      "@context": "https://schema.org",
-      "@type": "ImageObject",
-      "contentUrl": "${post.thumbnail_url}",
-      "height": 720,
-      "width": 1280,
-      "url": "${post.thumbnail_url}",
-      "caption": "${post.post_title}"
-    },
-    "articleSection": "${post.categories[1]}",
-    "articleBody": "${cleanArticleBody(post.post_content)}",
-    "description": "${post.meta_description}",
-    "url": "https://courtbook.in/posts/${post.post_name}",
-    "isAccessibleForFree": true,
-    "hasPart": [
+    "@graph": [
       {
-        "@type": "WebPageElement",
-        "isAccessibleForFree": true,
-        "cssSelector": ".article-content"
-      }
-    ],
-    "publisher": {
-      "@type": "Organization",
-      "name": "Court Book",
-      "url": "https://courtbook.in",
-      "logo": {
-        "@context": "https://schema.org",
-        "@type": "ImageObject",
-        "contentUrl": "https://s3.courtbook.in/icons/large.png",
-        "height": 60,
-        "width": 240,
-        "name": "Court Book - Logo",
-        "url": "https://s3.courtbook.in/icons/large.png"
+        "@type": "NewsArticle",
+        "@id": "${canonicalUrl}#article",
+        "headline": "${post.post_title}",
+        "description": "${post.meta_description}",
+        "articleBody": "${cleanArticleBody(post.post_content)}",
+        "url": "${canonicalUrl}",
+        "datePublished": "${formatDate(post.post_date)}",
+        "dateModified": "${formatDate(post.post_modified)}",
+        "author": {
+          "@type": "Person",
+          "name": "${post.author.display_name}",
+          "@id": "${baseUrl}/author/${post.author.display_name}"
+        },
+        "publisher": {
+          "@id": "${baseUrl}#organization"
+        },
+        "mainEntityOfPage": {
+          "@id": "${canonicalUrl}"
+        },
+        "image": {
+          "@type": "ImageObject",
+          "url": "${post.thumbnail_url}",
+          "width": 1200,
+          "height": 630
+        },
+        "articleSection": "Legal News",
+        "keywords": "${post.tags.join(", ")}"
       },
-      "description": "Comprehensive coverage of legal news, court judgments, and legal analysis",
-    },
-
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": "https://courtbook.in/posts/${post.post_name}"
-    },
-    "speakable": {
-      "@context": "https://schema.org",
-      "@type": "SpeakableSpecification",
-      "xpath": [
-        "/html/head/title",
-        "//h1",
-        "/html/head/meta[@name='description']/@content"
-      ]
-    }
-  }
-  </script>
-
-
-
-
-  <!-- Organization Schema -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Court Book",
-    "alternateName": "Court Book",
-    "url": "https://courtbook.in",
-    "logo": {
-      "@context": "https://schema.org",
-      "@type": "ImageObject",
-      "contentUrl": "https://s3.courtbook.in/icons/large.png",
-      "height": 60,
-      "width": 240,
-      "name": "Court Book - Logo",
-      "url": "https://s3.courtbook.in/icons/large.png"
-    },
-    "description": "${post.meta_description}",
       {
-        "@type": "ContactPoint",
-        "email": "courtbook.in@gmail.com",
-        "contactType": "Customer Service"
-      }
-    ],
-    "areaServed": {
-      "@type": "Country",
-      "name": "India"
-    },
-    "knowsAbout": [
-      "Supreme Court Judgments",
-      "High Court Orders",
-      "Constitutional Law",
-      "Legal Analysis",
-      "Court Proceedings",
-      "Legal News",
-      "Judicial Decisions"
-    ]
-  }
-  </script>
-
-
-
-
-
-  <!-- WebSite Schema -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Court Book",
-    "alternateName": "Court Book - Legal News Portal",
-    "url": "https://courtbook.in",
-    "description": "${post.meta_description}",
-    "inLanguage": "en",
-    "keywords": "${post.meta_keyword}",
-    "author": {
-      "@type": "Organization",
-      "name": "Court Book"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Court Book",
-      "logo": {
-      "@context": "https://schema.org",
-      "@type": "ImageObject",
-      "contentUrl": "https://s3.courtbook.in/icons/large.png",
-      "height": 60,
-      "width": 240,
-      "name": "Court Book - Logo",
-      "url": "https://s3.courtbook.in/icons/large.png"
-    },
-    },
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://courtbook.in/posts/search?q={search_term_string}"
-      },
-      "query-input": "required name=search_term_string"
-    },
-    "mainEntity": {
-      "@type": "ItemList",
-      "name": "Legal News Categories",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Supreme Court",
-          "url": "https://courtbook.in/posts/category/supreme-court"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "High Court",
-          "url": "https://courtbook.in/posts/category/high-courts"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Judgment",
-          "url": "https://courtbook.in/posts/category/judgments"
-        },
-        {
-          "@type": "ListItem",
-          "position": 4,
-          "name": "Latest News Hindi",
-          "url": "https://courtbook.in/posts/category/latest-news-hindi"
-        },
-                {
-          "@type": "ListItem",
-          "position": 4,
-          "name": "Latest News",
-          "url": "https://courtbook.in/posts/category/latest"
-        }
-      ]
-    }
-  }
-  </script>
-
-
-
-<!-- Breadcrumb Schema -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "name": "Legal News Navigation",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "item": {
-          "@id": "https://courtbook.in",
-          "name": "Home"
+        "@type": "Organization",
+        "@id": "${baseUrl}#organization",
+        "name": "Court Book",
+        "url": "${baseUrl}",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "${baseUrl}/images/logo.png",
+          "width": 240,
+          "height": 60
         }
       },
       {
-        "@type": "ListItem",
-        "position": 2,
-        "item": {
-          "@id": "https://courtbook.in/amp/",
-          "@type": "WebPage",
-          "name": "AMP"
-        }
+        "@type": "WebPage",
+        "@id": "${canonicalUrl}",
+        "url": "${canonicalUrl}",
+        "name": "${post.post_title}",
+        "isPartOf": {
+          "@id": "${baseUrl}#website"
+        },
+        "primaryImageOfPage": {
+          "@id": "${canonicalUrl}#primaryimage"
+        },
+        "datePublished": "${formatDate(post.post_date)}",
+        "dateModified": "${formatDate(post.post_modified)}"
       },
       {
-        "@type": "ListItem",
-        "position": 3,
-        "item": {
-          "@id": "https://courtbook.in/amp/posts",
-          "@type": "WebPage",
-          "name": "Posts"
-        }
-      },
-      {
-        "@type": "ListItem",
-        "position": 4,
-        "item": {
-          "@id": "https://courtbook.in/amp/posts/${post.post_name}",
-          "@type": "WebPage",
-          "name": "${post.post_title}"
+        "@type": "WebSite",
+        "@id": "${baseUrl}#website",
+        "url": "${baseUrl}",
+        "name": "Court Book",
+        "publisher": {
+          "@id": "${baseUrl}#organization"
         }
       }
     ]
   }
   </script>
-
-
-
-  <!-- Site Navigation Schema -->
-  <script type="application/ld+json">
-  {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "Legal Case Updates & Court News",
-  "description": "Comprehensive legal news, court judgments, and case updates from Supreme Court and High Courts across India",
-  "url": "https://example.com",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": {
-      "@type": "EntryPoint",
-      "urlTemplate": "https://example.com/search?q={search_term_string}"
-    },
-    "query-input": "required name=search_term_string"
-  },
-  "mainEntity": [
-    {
-      "@type": "SiteNavigationElement",
-      "@id": "#english-navigation",
-      "name": "English Navigation",
-      "hasPart": [
-        {
-          "@type": "SiteNavigationElement",
-          "name": "Latest News",
-          "url": "/posts/category/latest"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "Supreme Court",
-          "url": "/posts/category/supreme-court"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "High Courts",
-          "url": "/posts/category/high-courts",
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "Judgments",
-          "url": "/posts/category/judgments"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "Consumer Cases",
-          "url": "/posts/category/consumer"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "AIBE & Recruitments",
-          "url": "/posts/category/aibe-and-recruitment"
-        }
-      ]
-    },
-    {
-      "@type": "SiteNavigationElement",
-      "@id": "#hindi-navigation",
-      "name": "Hindi Navigation",
-      "inLanguage": "hi",
-      "hasPart": [
-        {
-          "@type": "SiteNavigationElement",
-          "name": "ताज़ा ख़बरें",
-          "url": "/posts/category/latest-news-hindi",
-          "inLanguage": "hi"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "सर्वोच्च न्यायालय",
-          "url": "/posts/category/supreme-court-hindi",
-          "inLanguage": "hi"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "उच्च न्यायालय",
-          "url": "/posts/category/high-courts-hindi",
-          "inLanguage": "hi",
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "जजमेंट",
-          "url": "/posts/category/judgments-hindi",
-          "inLanguage": "hi"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "उपभोक्ता मामले",
-          "url": "/posts/category/consumer-cases-hindi",
-          "inLanguage": "hi"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "एआईबीई एवं नियुक्ति",
-          "url": "/posts/category/aibe-and-recruitment-hindi",
-          "inLanguage": "hi"
-        }
-      ]
-    },
-    {
-      "@type": "SiteNavigationElement",
-      "@id": "#main-menu",
-      "name": "Main Menu",
-      "hasPart": [
-        {
-          "@type": "SiteNavigationElement",
-          "name": "Home",
-          "url": "/"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "Bare Act",
-          "url": "/search/?category=popular"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "Constitution",
-          "url": "/consitution"
-        },
-        {
-          "@type": "SiteNavigationElement",
-          "name": "Drafts",
-          "url": "/draft"
-
-        },
-      ]
-    }
-  ],
-  "publisher": {
-    "@type": "Organization",
-    "name": "Court Book",
-    "logo": {
-      "@context": "https://schema.org",
-      "@type": "ImageObject",
-      "contentUrl": "https://s3.courtbook.in/icons/large.png",
-      "height": 60,
-      "width": 240,
-      "name": "Court Book - Logo",
-      "url": "https://s3.courtbook.in/icons/large.png"
-    },
-  },
-  "inLanguage": ["en", "hi"]
-}
-  </script>
-
-
-
-
-
-  <!-- WebPage Schema -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "${post.post_title}",
-    "description": "${post.meta_description}",
-    "keywords": "${post.meta_keyword}",
-    "inLanguage": "en",
-    "url": "https://courtbook.in/posts/${post.post_name}",
-    "author": {
-      "@type": "Person",
-      "name": "${post.author.display_name}"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Court Book",
-      "url": "https://courtbook.in",
-      "logo": {
-        "@context": "https://schema.org",
-        "@type": "ImageObject",
-        "contentUrl": "https://s3.courtbook.in/icons/large.png",
-        "height": 60,
-        "width": 240,
-        "name": "Court Book - Logo",
-        "url": "https://s3.courtbook.in/icons/large.png"
-      },
-    },
-    "datePublished": "${post.post_date}",
-    "dateModified": "${post.post_modified}",
-    "mainEntity": {
-      "@type": "NewsArticle",
-      "headline": "${post.post_title}"
-    },
-    "speakable": {
-      "@context": "https://schema.org",
-      "@type": "SpeakableSpecification",
-      "xpath": [
-        "//h1/span",
-        "/html/head/meta[@name='description']/@content"
-      ]
-    },
-    "isPartOf": {
-      "@type": "WebSite",
-      "name": "Court Book",
-      "url": "https://courtbook.in"
-    }
-  }
-  </script>
-
-
-
-
-
-
-
 </head>
 <body>
   <!-- Header -->
-  <header class="header">
-    <button class="hamburger" on="tap:sidebar.toggle">☰</button>
-    <a href="/" class="logo">
-      <img src="/center_icon.png" width="256" height="69" alt="CourtBook Logo" />
-    </a>
-  </header>
+<header class="header">
+  <button class="hamburger" on="tap:sidebar.toggle" aria-label="Open menu">☰</button>
+  <a href="/" class="logo">
+    <amp-img src="/center_icon.png" 
+             width="150" 
+             height="45" 
+             alt="CourtBook Logo"
+             layout="fixed">
+    </amp-img>
+  </a>
+</header>
 
   <!-- Breadcrumbs -->
   <nav class="breadcrumbs">
@@ -1278,9 +1048,12 @@ text-decoration: none;
   </div>
 </div>
       
-      <article>
-        ${htmlContent}
-      </article>
+    <!-- Article Content -->
+    <article>
+      ${post.post_content
+        .replace(/<!--[\s\S]*?-->/g, "")
+        .replace(/<p><strong>Read also:-<\/strong>[\s\S]*?<\/p>/gi, "")}
+    </article>
 
       <div class="tags">
         <strong>Tags: </strong>
@@ -1290,53 +1063,56 @@ text-decoration: none;
       </div>
       <div class="social-section">
 
-  <h4>Join Our WhatsApp</h4>
-  <ul class="whatsapp-links">
-    <li><a href="https://chat.whatsapp.com/KwREoyfM5rO7yCYzZ5i2El" target="_blank" rel="noopener">📢 Join Hindi Group</a></li>
-    <li><a href="https://chat.whatsapp.com/GzYLFXvAPAC32ZQW11D8KQ" target="_blank" rel="noopener">📢 Join English Group</a></li>
-    <li><a href="https://whatsapp.com/channel/0029VbAhqIsDeON4mckDIV0e" target="_blank" rel="noopener">📡 Join WhatsApp Channel</a></li>
-  </ul>
+    <!-- WhatsApp Section -->
+    <div class="whatsapp-section">
+      <h4>Join Our WhatsApp Community</h4>
+      <ul class="whatsapp-links">
+        <li><a href="https://chat.whatsapp.com/KwREoyfM5rO7yCYzZ5i2El" target="_blank" rel="noopener">Hindi Group</a></li>
+        <li><a href="https://chat.whatsapp.com/GzYLFXvAPAC32ZQW11D8KQ" target="_blank" rel="noopener">English Group</a></li>
+        <li><a href="https://whatsapp.com/channel/0029VbAhqIsDeON4mckDIV0e" target="_blank" rel="noopener">News Channel</a></li>
+      </ul>
+    </div>
 </div>
 
             <!-- Similar Posts Section -->
       <section class="similar-posts">
         <h2>Recommended</h2>
-        <div class="similar-posts-grid">
-          ${post?.similarPosts
-            .slice(0, 6)
-            .map(
-              (similarPost) => `
-            <article class="similar-post-card">
-              <a href="/posts/${
-                similarPost?.post_name
-              }" class="similar-post-link">
-                <div class="similar-post-image">
-                  <amp-img
-                    src="${
-                      post?.imageSizes?.medium || post?.imageSizes?.medium_large
-                    }"
-                    width="300"
-                    height="169"
-                    layout="responsive"
-                    alt="${similarPost?.post_title}">
-                  </amp-img>
-                </div>
-                <div class="similar-post-content">
-                  <h3 class="similar-post-title">${similarPost?.post_title}</h3>
-                  <time class="similar-post-date">${new Date(
-                    similarPost?.post_date
-                  ).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}</time>
-                </div>
-              </a>
-            </article>
-          `
-            )
-            .join("")}
-        </div>
+<div class="similar-posts-grid">
+  ${post?.similarPosts
+    .map(
+      (similarPost) => `
+        <article class="similar-post-card">
+          <a href="/posts/${similarPost?.post_name}" class="similar-post-link">
+            <div class="similar-post-image">
+              <amp-img
+                src="${
+                  similarPost?.imageSizes?.medium ||
+                  similarPost?.imageSizes?.medium_large ||
+                  "/default.jpg"
+                }"
+                width="300"
+                height="169"
+                layout="responsive"
+                alt="${similarPost?.post_title}">
+              </amp-img>
+            </div>
+            <div class="similar-post-content">
+              <h3 class="similar-post-title">${similarPost?.post_title}</h3>
+              <time class="similar-post-date">${new Date(
+                similarPost?.post_date
+              ).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}</time>
+            </div>
+          </a>
+        </article>
+      `
+    )
+    .join("")}
+</div>
+
       </section>
     </div>
   </main>
