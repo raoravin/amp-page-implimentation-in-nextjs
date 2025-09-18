@@ -302,6 +302,9 @@ export function generateAMPHTML() {
     },
   };
 
+
+  const src = post.imageSizes.medium_large ? post.imageSizes.medium_large : post.thumbnail_url
+
   // Convert markdown-style content to HTML (simplified version)
   const htmlContent = post.post_content
     .replace(/<p><strong>Read also:-<\/strong>[\s\S]*?<\/p>/gi, "")
@@ -628,13 +631,7 @@ text-decoration: none;
     <link 
   rel="preload" 
   as="image" 
-  href="${post.imageSizes.medium_large}"
-  imagesrcset="${post.imageSizes.medium} 300w,
-               ${post.imageSizes.medium_large} 768w,
-               ${post.imageSizes.large} 1024w"
-  imagesizes="(max-width: 600px) 300px,
-              (max-width: 900px) 768px,
-              1024px"
+  href="${src}"
   fetchpriority="high">
     <meta name="robots" content="max-image-preview:large">
     <meta name="author" content="${post.author.display_name}">
@@ -1239,24 +1236,18 @@ text-decoration: none;
         post.meta_description
       }</p>
 
-<div class="article-image">
-  <amp-img
-    src="${post.imageSizes.medium_large}"
-    srcset="${post.imageSizes.medium} 300w,
-            ${post.imageSizes.medium_large} 768w,
-            ${post.imageSizes.large} 1024w"
-    sizes="(max-width: 600px) 300px,
-           (max-width: 900px) 768px,
-           1024px"
-    width="1024"
-    height="576"
-    layout="responsive"
-    decoding="async"
-    loading="eager"
-    fetchpriority="high"
-    alt="${post.post_title}">
-  </amp-img>
-</div>
+    <div class="article-image">
+      <amp-img
+        src="${src}"
+        width="1280"
+        height="720"
+        layout="responsive"
+        decoding="async"
+        loading="eager"
+        fetchpriority="high"
+        alt="${post.post_title}">
+      </amp-img>
+    </div>
 
       <div class="social-section">
   <h2>Share this post</h2>
