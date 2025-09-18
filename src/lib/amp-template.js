@@ -1085,7 +1085,7 @@ export function generateAMPHTML(baseUrl = "https://localhost:3000") {
           <a href="/posts/${similarPost?.post_name}" class="similar-post-link">
             <div class="similar-post-image">
               <amp-img
-                src="${ similarPost?.imageSizes?.thumbnail ||
+                src="${
                   similarPost?.imageSizes?.medium ||
                   similarPost?.imageSizes?.medium_large
                 }"
